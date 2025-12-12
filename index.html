@@ -1,466 +1,242 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CBS - 서명 전 계약서 검토 및 리스크 분석</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Pretendard', 'sans-serif'] }, colors: { cbs: { navy: '#1e293b', blue: '#2563eb', sky: '#f1f5f9', risk: '#dc2626', warn: '#d97706', safe: '#059669', legal: '#4f46e5' } } } } }
-    </script>
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .risk-highlight { background-color: rgba(220, 38, 38, 0.15); border-bottom: 2px solid #dc2626; cursor: pointer; transition: all 0.2s; font-weight: 700; }
-        .risk-highlight:hover { background-color: rgba(220, 38, 38, 0.3); }
-        .step-active { @apply bg-cbs-blue text-white border-cbs-blue; }
-        .step-inactive { @apply bg-white text-slate-400 border-slate-200; }
-        .step-completed { @apply bg-blue-100 text-cbs-blue border-cbs-blue; }
-        .custom-checkbox:checked + div { border-color: #2563eb; background-color: #eff6ff; color: #1e40af; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>고민을 적어라</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: #0d0d0d;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+    }
+
+    h1 {
+        font-size: 32px;
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: #00e0ff;
+        text-shadow: 0px 0px 8px rgba(0, 224, 255, 0.4);
+    }
+
+    .container {
+        width: 100%;
+        max-width: 650px;
+        background: #1b1b1b;
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid #333;
+        box-shadow: 0 0 12px rgba(0, 255, 255, 0.15);
+    }
+
+    label {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    select {
+        width: 100%;
+        padding: 12px;
+        background: #0f0f0f;
+        color: white;
+        border: 1px solid #444;
+        border-radius: 8px;
+        font-size: 15px;
+        margin-bottom: 15px;
+        outline: none;
+    }
+
+    textarea {
+        width: 100%;
+        height: 120px;
+        padding: 12px;
+        font-size: 15px;
+        background: #0f0f0f;
+        color: white;
+        border: 1px solid #444;
+        border-radius: 8px;
+        resize: none;
+        outline: none;
+    }
+
+    button {
+        margin-top: 15px;
+        width: 100%;
+        padding: 14px;
+        background: #00c8ff;
+        color: black;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 17px;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background: #00e3ff;
+    }
+
+    .result {
+        margin-top: 25px;
+        padding: 20px;
+        background: #111;
+        border-radius: 10px;
+        border: 1px solid #333;
+    }
+
+    .advice {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 15px;
+        color: #f1f1f1;
+    }
+
+    .pain-number {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .bar-bg {
+        width: 100%;
+        height: 14px;
+        background: #333;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #00e0ff, #00ff8f);
+        width: 0%;
+        transition: width 0.4s ease;
+    }
+</style>
 </head>
-<body class="font-sans text-slate-800 bg-slate-50 overflow-x-hidden">
+<body>
 
-    <nav class="bg-white/95 backdrop-blur-md border-b border-slate-200 fixed w-full z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center cursor-pointer" onclick="location.reload()">
-                    <div class="bg-cbs-blue text-white w-8 h-8 rounded flex items-center justify-center mr-2">
-                        <i class="fa-solid fa-gavel text-sm"></i>
-                    </div>
-                    <span class="font-black text-2xl text-cbs-navy tracking-tight">CBS <span class="text-xs font-normal text-slate-500 ml-1">AI Contract Review</span></span>
-                </div>
-                <div class="hidden md:flex items-center space-x-6">
-                    <div class="flex items-center text-xs font-medium text-cbs-legal bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
-                        <i class="fa-solid fa-database mr-1.5"></i>
-                        판례 · 법령 데이터베이스 연동됨
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+<h1>고민을 적어라</h1>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20 min-h-screen">
-        
-        <div class="text-center mb-10 fade-in" id="hero-section">
-            <h1 class="text-3xl md:text-5xl font-black text-slate-900 mb-4 leading-tight">
-                서명 전, <span class="text-cbs-blue">계약서를 검토</span>해드립니다.
-            </h1>
-            <p class="text-slate-600 text-lg max-w-2xl mx-auto">
-                산업별 전문 법령 데이터(RAG)를 기반으로<br>
-                입력하신 계약서의 <span class="font-bold text-cbs-risk">숨겨진 독소 조항</span>을 실시간으로 분석합니다.
-            </p>
-        </div>
+<div class="container">
 
-        <div id="wizard-container" class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden fade-in transition-all duration-300">
-            <div class="bg-slate-50 border-b border-slate-200 px-8 py-4">
-                <div class="flex items-center justify-between relative">
-                    <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-slate-200 -z-10"></div>
-                    <div id="progress-line" class="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-cbs-blue transition-all duration-500 -z-0" style="width: 0%;"></div>
-                    <div class="flex flex-col items-center step-indicator" data-step="1">
-                        <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm bg-cbs-blue text-white border-cbs-blue z-10 transition-colors">1</div>
-                        <span class="text-xs font-bold mt-1 text-cbs-blue">기본 정보</span>
-                    </div>
-                    <div class="flex flex-col items-center step-indicator" data-step="2">
-                        <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm bg-white text-slate-400 border-slate-200 z-10 transition-colors">2</div>
-                        <span class="text-xs font-medium mt-1 text-slate-400">당사자/성향</span>
-                    </div>
-                    <div class="flex flex-col items-center step-indicator" data-step="3">
-                        <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm bg-white text-slate-400 border-slate-200 z-10 transition-colors">3</div>
-                        <span class="text-xs font-medium mt-1 text-slate-400">중점 분석</span>
-                    </div>
-                    <div class="flex flex-col items-center step-indicator" data-step="4">
-                        <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm bg-white text-slate-400 border-slate-200 z-10 transition-colors">4</div>
-                        <span class="text-xs font-medium mt-1 text-slate-400">문서 입력</span>
-                    </div>
-                </div>
-            </div>
+    <label for="category">카테고리 선택</label>
+    <select id="category">
+        <option value="연애">연애</option>
+        <option value="인생">인생</option>
+        <option value="인간관계">인간관계</option>
+        <option value="미래">미래</option>
+        <option value="학업">학업</option>
+    </select>
 
-            <div class="p-8 min-h-[400px]">
-                <div id="step-1" class="step-content block animate-fadeIn">
-                    <h2 class="text-2xl font-bold text-slate-800 mb-6">어떤 계약을 체결하시나요?</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-bold text-slate-600 mb-2">산업 분야 (Industry)</label>
-                            <select id="industry" onchange="updateContractTypes()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cbs-blue outline-none font-medium">
-                                <option value="construction">🏗️ 건설 / 엔지니어링 / CM</option>
-                                <option value="it">💻 IT / 소프트웨어 / SaaS</option>
-                                <option value="realestate">🏢 부동산 / 임대차</option>
-                                <option value="labor">👔 인사 / 노무 / 채용</option>
-                                <option value="franchise">🏪 유통 / 프랜차이즈</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-600 mb-2">계약 유형 (Contract Type)</label>
-                            <select id="contract-type" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cbs-blue outline-none font-medium"></select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-slate-600 mb-2">관할 법령 / 지역</label>
-                            <select id="jurisdiction" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cbs-blue outline-none font-medium">
-                                <option value="KR" selected>🇰🇷 대한민국 법령 기준</option>
-                                <option value="US">🇺🇸 미국 (California Law)</option>
-                                <option value="Global">🌏 국제표준 (FIDIC 등)</option>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-600 mb-2">계약 규모</label>
-                                <input type="text" id="contract-size" placeholder="예: 5,000만원" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-600 mb-2">계약 기간</label>
-                                <input type="text" id="contract-duration" placeholder="예: 12개월" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <label for="inputText">당신의 고민</label>
+    <textarea id="inputText" placeholder="솔직하게 적어. 그래야 현실적인 답을 줄 수 있어."></textarea>
 
-                <div id="step-2" class="step-content hidden animate-fadeIn">
-                    <h2 class="text-2xl font-bold text-slate-800 mb-2">누구 입장에서 검토할까요?</h2>
-                    <p class="text-slate-500 mb-6 text-sm">유불리를 판단하는 기준이 됩니다.</p>
-                    <div class="mb-8">
-                        <label class="block text-sm font-bold text-slate-600 mb-3">나의 역할 (Role)</label>
-                        <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="role" value="supplier" class="hidden peer custom-checkbox" checked>
-                                <div class="p-4 rounded-xl border-2 border-slate-200 text-center hover:bg-slate-50 peer-checked:border-cbs-blue peer-checked:bg-blue-50 peer-checked:text-cbs-blue transition">
-                                    <i class="fa-solid fa-hand-holding-dollar text-2xl mb-2"></i><br>
-                                    <span class="font-bold text-sm">을 (수급인/공급자)</span>
-                                </div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="role" value="buyer" class="hidden peer custom-checkbox">
-                                <div class="p-4 rounded-xl border-2 border-slate-200 text-center hover:bg-slate-50 peer-checked:border-cbs-blue peer-checked:bg-blue-50 peer-checked:text-cbs-blue transition">
-                                    <i class="fa-solid fa-money-bill-wave text-2xl mb-2"></i><br>
-                                    <span class="font-bold text-sm">갑 (발주자/구매자)</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-600 mb-3">위험 수용 성향</label>
-                        <div class="flex space-x-4">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="radio" name="risk" value="conservative" class="w-5 h-5 text-cbs-blue focus:ring-cbs-blue border-gray-300" checked>
-                                <span class="ml-2 font-medium text-slate-700">보수적</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer">
-                                <input type="radio" name="risk" value="balanced" class="w-5 h-5 text-cbs-blue focus:ring-cbs-blue border-gray-300">
-                                <span class="ml-2 font-medium text-slate-700">균형</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
+    <button onclick="onRunAIButtonClicked()">조언 받기</button>
 
-                <div id="step-3" class="step-content hidden animate-fadeIn">
-                    <h2 class="text-2xl font-bold text-slate-800 mb-2">중점적으로 볼 항목</h2>
-                    <p class="text-slate-500 mb-6 text-sm">선택하신 항목은 가중치를 두어 더 정밀하게 분석합니다.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label class="cursor-pointer">
-                            <input type="checkbox" name="focus" value="money" class="hidden peer custom-checkbox" checked>
-                            <div class="p-4 rounded-xl border border-slate-200 flex items-center transition hover:bg-slate-50">
-                                <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center mr-3"><i class="fa-solid fa-coins"></i></div>
-                                <div><span class="font-bold text-slate-700 block">대금/급여 지급</span><span class="text-xs text-slate-400">지연이자, 물가변동</span></div>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="checkbox" name="focus" value="penalty" class="hidden peer custom-checkbox" checked>
-                            <div class="p-4 rounded-xl border border-slate-200 flex items-center transition hover:bg-slate-50">
-                                <div class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mr-3"><i class="fa-solid fa-gavel"></i></div>
-                                <div><span class="font-bold text-slate-700 block">손해배상 & 위약금</span><span class="text-xs text-slate-400">배상 한도</span></div>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="checkbox" name="focus" value="termination" class="hidden peer custom-checkbox">
-                            <div class="p-4 rounded-xl border border-slate-200 flex items-center transition hover:bg-slate-50">
-                                <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mr-3"><i class="fa-solid fa-file-circle-xmark"></i></div>
-                                <div><span class="font-bold text-slate-700 block">해지 및 종료</span><span class="text-xs text-slate-400">임의 해지</span></div>
-                            </div>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="checkbox" name="focus" value="ip" class="hidden peer custom-checkbox">
-                            <div class="p-4 rounded-xl border border-slate-200 flex items-center transition hover:bg-slate-50">
-                                <div class="w-10 h-10 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center mr-3"><i class="fa-solid fa-fingerprint"></i></div>
-                                <div><span class="font-bold text-slate-700 block">IP & 비밀유지</span><span class="text-xs text-slate-400">저작권, 소스코드</span></div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
+    <div id="resultBox" class="result" style="display:none;">
+        <div class="advice" id="adviceText"></div>
+        <div class="pain-number" id="painNumber"></div>
 
-                <div id="step-4" class="step-content hidden animate-fadeIn">
-                    <h2 class="text-2xl font-bold text-slate-800 mb-2">분석할 계약서 입력</h2>
-                    <p class="text-slate-500 mb-6 text-sm">입력하신 텍스트를 기반으로 실제 분석을 수행합니다.</p>
-                    <div class="relative">
-                        <textarea id="contract-text" class="w-full h-64 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cbs-blue outline-none resize-none text-slate-700 text-sm leading-relaxed custom-scrollbar" placeholder="여기에 계약서 조항을 붙여넣으세요."></textarea>
-                        <div class="absolute bottom-4 right-4 flex space-x-2">
-                            <div class="relative group">
-                                <button class="text-xs bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-50 transition shadow-sm font-bold">
-                                    <i class="fa-solid fa-paste mr-1"></i>예시 문구 넣기
-                                </button>
-                                <div class="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 hidden group-hover:block p-1">
-                                    <button onclick="pasteExample('construction')" class="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 rounded">🏗️ 건설: ESC/간접비 불가</button>
-                                    <button onclick="pasteExample('it')" class="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 rounded">💻 IT: 하자보수/IP독점</button>
-                                </div>
-                            </div>
-                            <button onclick="clearText()" class="text-xs bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600 hover:text-red-500 hover:bg-red-50 transition shadow-sm">지우기</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-slate-50 p-6 border-t border-slate-200 flex justify-between items-center">
-                <button id="btn-prev" onclick="changeStep(-1)" class="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition" disabled>이전</button>
-                <div id="btn-next-container">
-                    <button id="btn-next" onclick="changeStep(1)" class="px-8 py-3 rounded-xl font-bold bg-cbs-navy text-white hover:bg-slate-800 transition shadow-lg">다음 단계</button>
-                </div>
-                <div id="btn-submit-container" class="hidden">
-                    <button onclick="analyzeContract()" class="px-8 py-3 rounded-xl font-bold bg-cbs-blue text-white hover:bg-blue-600 transition shadow-lg flex items-center group">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-2 group-hover:animate-pulse"></i>
-                        실시간 정밀 분석 시작
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div id="loading-container" class="hidden max-w-2xl mx-auto text-center py-20 fade-in">
-            <div class="relative w-24 h-24 mx-auto mb-8">
-                <div class="absolute inset-0 border-4 border-slate-200 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-cbs-blue rounded-full border-t-transparent animate-spin"></div>
-                <div class="absolute inset-0 flex items-center justify-center"><i class="fa-solid fa-robot text-3xl text-cbs-blue"></i></div>
-            </div>
-            <h3 class="text-2xl font-bold text-slate-800 mb-2">계약서 분석 엔진 가동 중...</h3>
-            <p class="text-slate-500 text-sm mb-6" id="loading-status">텍스트 파싱 중...</p>
-            <div id="analysis-log" class="bg-slate-900 text-green-400 font-mono text-xs text-left p-4 rounded-lg shadow-inner max-w-md mx-auto h-32 overflow-y-auto custom-scrollbar">
-                > System initialized.<br>
-            </div>
-        </div>
-
-        <div id="result-container" class="hidden fade-in mt-10">
-            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col h-[700px]">
-                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-2xl">
-                        <h3 class="font-bold text-slate-700"><i class="fa-solid fa-file-contract mr-2"></i>분석 결과</h3>
-                        <span id="risk-count-badge" class="text-xs bg-cbs-risk text-white px-2 py-1 rounded font-bold">--개 위반 발견</span>
-                    </div>
-                    <div id="highlighted-text" class="p-8 overflow-y-auto custom-scrollbar text-sm leading-loose text-slate-600 flex-grow font-medium"></div>
-                </div>
-                <div class="space-y-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 relative overflow-hidden">
-                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">계약 안전 점수</p>
-                        <div class="flex items-end mt-2">
-                            <span id="score-display" class="text-5xl font-black text-cbs-blue">--</span>
-                            <span class="text-xl text-slate-400 font-bold mb-2 ml-1">/ 100</span>
-                        </div>
-                        <p id="score-comment" class="text-sm font-bold mt-2 text-slate-600">분석 결과 대기 중</p>
-                    </div>
-                    <div id="ai-advice-panel" class="bg-cbs-navy text-white p-6 rounded-2xl shadow-xl h-[500px] overflow-y-auto custom-scrollbar relative">
-                        <div class="flex items-center mb-4 pb-4 border-b border-slate-700">
-                            <div class="w-8 h-8 rounded bg-cbs-legal flex items-center justify-center mr-3"><i class="fa-solid fa-book-open"></i></div>
-                            <div>
-                                <h3 class="font-bold text-lg">상세 검토 리포트</h3>
-                                <p class="text-xs text-indigo-300">RAG Legal Database</p>
-                            </div>
-                        </div>
-                        <div id="advice-content" class="space-y-4">
-                            <p class="text-slate-400 text-center mt-20">왼쪽의 <span class="text-red-400 font-bold underline">하이라이트된 문장</span>을<br>클릭하여 상세 내용을 확인하세요.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center mt-10 pb-20">
-                <button onclick="location.reload()" class="text-slate-500 hover:text-cbs-blue font-bold underline decoration-2 underline-offset-4">다른 계약서 검토하기</button>
-            </div>
+        <div class="bar-bg">
+            <div class="bar-fill" id="painBar"></div>
         </div>
     </div>
+</div>
 
-    <script>
-        // === 1. Server Configuration ===
-        // [중요] 주소를 비워두면 자동으로 현재 페이지 주소를 기반으로 요청합니다.
-        const SERVER_URL = "https://e37e563b-0b2a-4497-9338-611d4a6118d7-00-1unbj00beh2mg.pike.replit.dev"; 
+<script>
+    const BACKEND_BASE_URL = "https://123f5049-e4d9-46d3-b5e4-abe2ce95619d-00-3abx99tggf49g.pike.replit.dev";
+    const AI_URL = BACKEND_BASE_URL + "/ai";
 
-        // === Knowledge Base ===
-        const contractOptions = {
-            construction: [ { val: 'work', text: '민간건설공사 도급계약' }, { val: 'sub', text: '건설공사 하도급계약' }, { val: 'eng', text: '설계 / 감리 / CM 용역' }, { val: 'public', text: '관급공사 (국가계약법)' } ],
-            it: [ { val: 'dev', text: 'SW 개발 용역 계약 (SI)' }, { val: 'maint', text: '유지보수 계약 (SLA)' }, { val: 'saas', text: 'SaaS 이용약관 / 라이선스' } ],
-            realestate: [ { val: 'lease', text: '상가/주택 임대차 계약' }, { val: 'sale', text: '부동산 매매 계약' }, { val: 'pm', text: '건물 관리(PM) 용역' } ],
-            labor: [ { val: 'std', text: '표준 근로계약서' }, { val: 'free', text: '프리랜서 위탁 계약' }, { val: 'part', text: '단시간 근로 계약' } ],
-            franchise: [ { val: 'new', text: '가맹 계약서 (신규)' }, { val: 'supply', text: '물품 공급 계약' }, { val: 'agent', text: '대리점/총판 계약' } ]
+    function getCounselMessage(text) {
+        if (!text || text.trim().length < 5) {
+            return "고민이라고 하기엔 너무 짧아. 현실 도피하려면 더 솔직해져야지.";
+        }
+
+        if (text.includes("취업") || text.includes("미래") || text.includes("진로")) {
+            return "불안한 건 이해하지만, 현실은 감정이 아니라 준비한 실력으로 평가된다.";
+        }
+
+        if (text.includes("사랑") || text.includes("연애") || text.includes("이별")) {
+            return "감정은 협상이 아니다. 상대를 바꾸려 하지 말고 먼저 너 자신부터 돌아봐.";
+        }
+
+        if (text.includes("공부") || text.includes("성적") || text.includes("과제")) {
+            return "노력 없이 성장을 바랐다면 착각이다. 결국 너에게 남는 건 실력뿐이다.";
+        }
+
+        return "네 문제는 특별한 것도, 사소한 것도 아니다. 현실을 직시하고 하나씩 해결해라.";
+    }
+
+    function calcPain(text) {
+        if (!text) return 5;
+        let score = text.length * 0.7;
+
+        const keywords = ["불안", "힘들", "외로", "괴롭", "분노", "좌절", "포기"];
+        keywords.forEach(k => { if (text.includes(k)) score += 10; });
+
+        return Math.min(100, Math.floor(score));
+    }
+
+    function collectInputsFromPage() {
+        const inputText = document.getElementById("inputText").value;
+        const category = document.getElementById("category").value;
+        const pain = calcPain(inputText);
+        const advice = getCounselMessage(inputText);
+
+        return {
+            고민내용: inputText,
+            카테고리: category,
+            고통지수: pain,
+            상담문구: advice
         };
+    }
 
-        // === UI Logic ===
-        let currentStep = 1;
-        const totalSteps = 4;
+    async function callAI(inputs) {
+        try {
+            const response = await fetch(AI_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ inputs })
+            });
 
-        window.onload = function() { updateContractTypes(); };
+            if (!response.ok) throw new Error("응답 오류");
 
-        function updateContractTypes() {
-            const indSelect = document.getElementById('industry');
-            const typeSelect = document.getElementById('contract-type');
-            const selectedInd = indSelect.value;
-            typeSelect.innerHTML = "";
-            if (contractOptions[selectedInd]) {
-                contractOptions[selectedInd].forEach(opt => {
-                    const option = document.createElement('option');
-                    option.value = opt.val;
-                    option.text = opt.text;
-                    typeSelect.appendChild(option);
-                });
-            }
+            const data = await response.json();
+            return data.answer || "[응답 없음]";
+        } catch (err) {
+            return "[통신 오류] " + err.message;
         }
+    }
 
-        function changeStep(dir) {
-            const next = currentStep + dir;
-            if (next < 1 || next > totalSteps) return;
-            document.getElementById(`step-${currentStep}`).classList.add('hidden');
-            document.getElementById(`step-${currentStep}`).classList.remove('block');
-            document.getElementById(`step-${next}`).classList.remove('hidden');
-            document.getElementById(`step-${next}`).classList.add('block');
-            
-            const progress = ((next - 1) / (totalSteps - 1)) * 100;
-            document.getElementById('progress-line').style.width = `${progress}%`;
+    async function onRunAIButtonClicked() {
+        const inputs = collectInputsFromPage();
 
-            for(let i=1; i<=totalSteps; i++) {
-                const indicator = document.querySelector(`.step-indicator[data-step="${i}"] div`);
-                const label = document.querySelector(`.step-indicator[data-step="${i}"] span`);
-                if(i < next) { 
-                    indicator.className = "w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm bg-blue-100 text-cbs-blue border-cbs-blue transition-colors";
-                    indicator.innerHTML = '<i class="fa-solid fa-check"></i>';
-                    label.className = "text-xs font-bold mt-1 text-cbs-blue";
-                } else if(i === next) {
-                    indicator.className = "w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm bg-cbs-blue text-white border-cbs-blue transition-colors";
-                    indicator.innerHTML = i;
-                    label.className = "text-xs font-bold mt-1 text-cbs-blue";
-                } else {
-                    indicator.className = "w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm bg-white text-slate-400 border-slate-200 transition-colors";
-                    indicator.innerHTML = i;
-                    label.className = "text-xs font-medium mt-1 text-slate-400";
-                }
-            }
-            currentStep = next;
-            document.getElementById('btn-prev').disabled = currentStep === 1;
-            if (currentStep === totalSteps) {
-                document.getElementById('btn-next-container').classList.add('hidden');
-                document.getElementById('btn-submit-container').classList.remove('hidden');
-            } else {
-                document.getElementById('btn-next-container').classList.remove('hidden');
-                document.getElementById('btn-submit-container').classList.add('hidden');
-            }
-        }
+        const advice = inputs.상담문구;
+        const pain = inputs.고통지수;
 
-        function pasteExample(type) {
-            let text = "";
-            if (type === 'construction') text = `제22조 [물가변동 배제]\n본 공사 기간 중 물가 변동으로 인하여 재료비 등이 상승하더라도 "을"은 계약금액의 증액을 청구할 수 없다.\n\n제23조 [간접비]\n발주자의 귀책 사유로 공기가 연장되더라도 현장관리비 등 간접비 증액은 인정하지 아니한다.`;
-            else if (type === 'it') text = `제10조 [지적재산권]\n본 계약에 의해 산출된 모든 결과물(소스코드 포함)의 지적재산권은 "갑"에게 귀속된다.\n\n제15조 [하자보수]\n"을"은 검수 완료 후 발생하는 모든 하자에 대해 기간의 정함 없이 무상으로 즉시 보수하여야 한다.`;
-            document.getElementById('contract-text').value = text;
-        }
-        function clearText() { document.getElementById('contract-text').value = ""; }
+        document.getElementById("adviceText").innerText = advice;
+        document.getElementById("painNumber").innerText = `고통 지수: ${pain} / 100`;
+        document.getElementById("painBar").style.width = `${pain}%`;
+        document.getElementById("resultBox").style.display = "block";
 
-        // === 4. ANALYSIS ENGINE (Updated) ===
-        async function analyzeContract() {
-            const text = document.getElementById('contract-text').value;
-            if (text.length < 10) { alert("계약서 내용을 입력해주세요."); return; }
+        const answer = await callAI(inputs);
+        document.getElementById("adviceText").innerText = answer;
+    }
+</script>
 
-            document.getElementById('wizard-container').classList.add('hidden');
-            document.getElementById('hero-section').classList.add('hidden');
-            document.getElementById('loading-container').classList.remove('hidden');
-
-            const logEl = document.getElementById('analysis-log');
-            logEl.innerHTML = "> Engine Started...<br>";
-
-            // [Data Collection] - Gathering all inputs for Gemini
-            const requestData = {
-                industry: document.getElementById('industry').value,
-                contract_type: document.getElementById('contract-type').value,
-                jurisdiction: document.getElementById('jurisdiction').value,
-                size: document.getElementById('contract-size').value,
-                duration: document.getElementById('contract-duration').value,
-                role: document.querySelector('input[name="role"]:checked').value,
-                risk_tolerance: document.querySelector('input[name="risk"]:checked').value,
-                focus_areas: Array.from(document.querySelectorAll('input[name="focus"]:checked')).map(cb => cb.value),
-                text: text
-            };
-
-            try {
-                logEl.innerHTML += "> Connecting to Analysis Server...<br>";
-                
-                // [Auto-Detect URL] Replit or Localhost
-                const response = await fetch('/analyze', { 
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestData)
-                });
-
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(`Server Error (${response.status}): ${JSON.stringify(errData)}`);
-                }
-
-                const data = await response.json();
-
-                if (data.status === "success") {
-                    logEl.innerHTML += `> Analysis Complete. Found ${data.risk_count} risks.<br>`;
-                    window.aiAnalysisResult = data.ai_analysis;
-                    setTimeout(() => { showResult(data.risks, text); }, 500);
-                }
-
-            } catch (error) {
-                console.error("Communication Error:", error);
-                alert(`❌ 서버 통신 오류\n\n${error.message}`);
-                location.reload(); 
-            }
-        }
-
-        function showResult(risks, processedHtml) {
-            document.getElementById('loading-container').classList.add('hidden');
-            document.getElementById('result-container').classList.remove('hidden');
-            document.getElementById('highlighted-text').innerHTML = processedHtml.replace(/\n/g, '<br>');
-
-            let score = 100;
-            risks.forEach(r => { if(r.level === 'critical') score -= 20; else score -= 10; });
-            if(score < 0) score = 0;
-
-            document.getElementById('score-display').innerText = score;
-            document.getElementById('risk-count-badge').innerText = `${risks.length}개 위험 발견`;
-            const comment = document.getElementById('score-comment');
-            
-            if(score >= 90) { comment.innerText = "비교적 안전한 계약서입니다."; comment.className="text-sm font-bold mt-2 text-cbs-safe"; }
-            else if(score >= 70) { comment.innerText = "수정이 필요한 조항이 보입니다."; comment.className="text-sm font-bold mt-2 text-cbs-warn"; }
-            else { comment.innerText = "서명 시 심각한 피해가 우려됩니다."; comment.className="text-sm font-bold mt-2 text-cbs-risk"; }
-
-            window.showAdvice = function(riskId) {
-                const risk = risks.find(r => r.id === riskId) || risks[0];
-                const panel = document.getElementById('ai-advice-panel');
-                const colorClass = risk.level === 'critical' ? 'red' : 'orange';
-                const icon = risk.level === 'critical' ? 'fa-radiation' : 'fa-triangle-exclamation';
-                
-                panel.innerHTML = `
-                    <div class="flex items-center mb-4 pb-4 border-b border-slate-700">
-                        <div class="w-8 h-8 rounded bg-cbs-legal flex items-center justify-center mr-3"><i class="fa-solid fa-scale-balanced"></i></div>
-                        <div><h3 class="font-bold text-lg">AI 법률 검토 리포트</h3><p class="text-xs text-indigo-300">Powered by Gemini 1.5</p></div>
-                    </div>
-                    <div class="bg-${colorClass}-500/20 p-5 rounded-xl border border-${colorClass}-500/50 animate-fadeIn">
-                        <div class="flex items-center mb-3">
-                            <i class="fa-solid ${icon} text-${colorClass}-400 mr-2 text-xl"></i>
-                            <span class="font-bold text-white text-lg">${risk.title}</span>
-                        </div>
-                        <p class="text-slate-200 text-sm leading-relaxed mb-4">${risk.msg}</p>
-                    </div>
-                    <button onclick="document.getElementById('ai-advice-panel').innerHTML = initialAdviceHTML" class="mt-6 text-sm text-slate-400 hover:text-white underline"><i class="fa-solid fa-arrow-rotate-left mr-1"></i>처음으로</button>
-                `;
-            };
-            window.initialAdviceHTML = document.getElementById('ai-advice-panel').innerHTML;
-            if(risks.length > 0) window.showAdvice(risks[0].id);
-            else {
-                document.getElementById('ai-advice-panel').innerHTML = `<div class="flex h-full items-center justify-center flex-col text-slate-400"><i class="fa-solid fa-check-circle text-5xl text-cbs-safe mb-4"></i><p>특이한 위험 조항이 발견되지 않았습니다.</p></div>`;
-            }
-        }
-    </script>
 </body>
 </html>
+
+
 
